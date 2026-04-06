@@ -8,6 +8,53 @@ using UnityEngine.UI;
 
 namespace SaveItems
 {
+    // When the user buys the plain (non-custom) version of an item that already has a
+    // custom-coloured entry in the cart, the game finds the custom entry by itemID+itemType
+    // and calls BuyAnotherItem (incrementing its qty) instead of adding a new plain entry.
+    //
+    // Fix: in the Prefix, temporarily change the matching custom cart item's itemID to -1
+    // so the game's search misses it and falls through to BuyNewItem (a new plain entry).
+    // The Postfix restores the real itemID.
+    [HarmonyPatch(typeof(ComputerShop), nameof(ComputerShop.ButtonBuyShopItem))]
+    public class Patch_FixPlainBuyWithCustomInCart
+    {
+        private static ShopCartItem _maskedItem;
+        private static int _originalItemID;
+
+        public static void Prefix(ComputerShop __instance, int itemID, int price, PlayerManager.ObjectInHand itemType, string displayName, bool isCustomColor)
+        {
+            _maskedItem = null;
+
+            if (isCustomColor) return;
+
+            // Find a custom-coloured cart entry that would otherwise steal this click.
+            // Game stores cart items in cartUIItems (not as scene children).
+            var cartItems = __instance.cartUIItems;
+            if (cartItems != null)
+            {
+                foreach (var ci in cartItems)
+                {
+                    if (ci != null && ci.itemID == itemID && ci.itemType == itemType && ci.hasCustomColor)
+                    {
+                        _maskedItem = ci;
+                        _originalItemID = ci.itemID;
+                        ci.itemID = -1; // hide it from the game's cart search
+                        break;
+                    }
+                }
+            }
+        }
+
+        public static void Postfix()
+        {
+            if (_maskedItem != null)
+            {
+                _maskedItem.itemID = _originalItemID;
+                _maskedItem = null;
+            }
+        }
+    }
+
     // UpdateVisualState fires after isUnlocked is definitively set on the ShopItem.
     // We use this as the hook to refresh preset cards rather than UnlockButton,
     // which fires before the async unlock flow has finished updating the field.
@@ -169,6 +216,22 @@ namespace SaveItems
                 }
 
                 card.SetActive(true);
+            }
+
+            // In Il2Cpp, Instantiate of a live scene object shares the native
+            // ButtonExtended.onClick UnityEvent between original and clone.
+            // Our RemoveAllListeners()+AddListener(preset) above therefore also
+            // replaced the first shop item's (template's) button listener with the
+            // last preset's buy action.  Restore it here so clicking that original
+            // item still calls ButtonBuyItem.
+            ShopItem templateSI = shopItemsArray[0];
+            if (templateSI?.buttonExtended != null)
+            {
+                templateSI.buttonExtended.onClick.RemoveAllListeners();
+                ShopItem cap = templateSI;
+                System.Action restore = () => cap.ButtonBuyItem();
+                templateSI.buttonExtended.onClick.AddListener(
+                    DelegateSupport.ConvertDelegate<UnityEngine.Events.UnityAction>(restore));
             }
 
             // --- Expand Content to show all injected cards ---

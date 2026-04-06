@@ -1,4 +1,4 @@
-﻿using HarmonyLib;
+using HarmonyLib;
 using Il2Cpp;
 using Il2CppPolyAndCode.UI;
 using UnityEngine;
@@ -9,7 +9,7 @@ using Object = UnityEngine.Object;
 
 namespace SaveItems
 {
-    [HarmonyPatch(typeof(AssetManagement))] 
+    [HarmonyPatch(typeof(AssetManagement))]
     public static class ShopUIHandler
     {
         // 1. Tell the recycler how many extra items we have
@@ -30,28 +30,39 @@ namespace SaveItems
 
             int originalCount = __instance.GetItemCount() - CustomItemsSaver.savedPresets.presets.Count;
 
+            GameObject card = cell.Cast<Component>().gameObject;
+
             if (index >= originalCount)
             {
                 int presetIndex = index - originalCount;
                 if (presetIndex < CustomItemsSaver.savedPresets.presets.Count)
                 {
                     var preset = CustomItemsSaver.savedPresets.presets[presetIndex];
-                    GameObject card = cell.Cast<Component>().gameObject;
                     ApplyPresetVisuals(card, preset);
                     return false; // Stop original game logic
                 }
             }
+
+            // Original item — restore ShopItem if it was disabled by a previous preset display
+            var si = card.GetComponent<ShopItem>();
+            if (si != null && !si.enabled)
+            {
+                si.enabled = true;
+                var btn = card.GetComponent<Button>();
+                if (btn != null) btn.onClick.RemoveAllListeners();
+            }
             return true;
         }
 
-        private static bool IsShop(AssetManagement instance) => 
+        private static bool IsShop(AssetManagement instance) =>
             instance.GetComponentInParent<ComputerShop>() != null || instance.name.Contains("Shop");
 
         private static void ApplyPresetVisuals(GameObject card, PresetData preset)
         {
-            // CRITICAL: Destroy the original script so it doesn't overwrite our text
+            // Disable ShopItem so it doesn't overwrite our text/visuals.
+            // Do NOT DestroyImmediate — the card may be recycled back for an original item later.
             var si = card.GetComponent<ShopItem>();
-            if (si != null) Object.DestroyImmediate(si);
+            if (si != null) si.enabled = false;
 
             // Text Setup (Using TMP_Text to be safe across all TMPro types)
             foreach (var txt in card.GetComponentsInChildren<TMP_Text>(true))
@@ -85,9 +96,10 @@ namespace SaveItems
             {
                 btn.onClick.RemoveAllListeners();
                 var shop = Object.FindObjectOfType<ComputerShop>();
+                PresetData cap = preset;
                 System.Action buy = new System.Action(() => {
-                    if (ColorUtility.TryParseHtmlString(preset.colorHex, out Color f)) {
-                        shop.SpawnNewCartItem(preset.itemID, preset.price, (PlayerManager.ObjectInHand)preset.itemType, preset.displayName, new Il2CppSystem.Nullable<Color>(f));
+                    if (ColorUtility.TryParseHtmlString(cap.colorHex, out Color f)) {
+                        shop.SpawnNewCartItem(cap.itemID, cap.price, (PlayerManager.ObjectInHand)cap.itemType, cap.displayName, new Il2CppSystem.Nullable<Color>(f));
                         shop.UpdateCartTotal();
                     }
                 });

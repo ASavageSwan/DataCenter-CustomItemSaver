@@ -24,8 +24,18 @@ namespace SaveItems
                     displayName = __instance.pendingDisplayName
                 };
 
-                CustomItemsSaver.savedPresets.presets.Add(newPreset);
-                CustomItemsSaver.SavePresets();
+                // Don't save if an identical preset already exists
+                bool isDuplicate = CustomItemsSaver.savedPresets.presets.Exists(p =>
+                    p.itemID == newPreset.itemID &&
+                    p.itemType == newPreset.itemType &&
+                    p.colorHex == newPreset.colorHex);
+
+                if (!isDuplicate)
+                {
+                    CustomItemsSaver.savedPresets.presets.Add(newPreset);
+                    CustomItemsSaver.SavePresets();
+                    MelonLogger.Msg($"[SaveItems] Saved new preset: '{newPreset.displayName}' color={newPreset.colorHex}");
+                }
             }
         }
 
