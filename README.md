@@ -1,8 +1,6 @@
 # DataCenter-CustomItemSaver
 A mod for the game Data Center that allows players to save custom colours for items and itens are available in the shop 
----
-### Know Bugs
-- **Only 10 items** can be click on rest are cut of the screen, if try and click on items that are cut off them cuase the scrol to go wild.
+
 ---
 ## ✨ Features
 - **Custom Presets:** Automatically saves any item purchased with a custom color.
