@@ -25,6 +25,23 @@ namespace SaveItems
                     string json = File.ReadAllText(saveFilePath);
                     savedPresets = JsonSerializer.Deserialize<PresetList>(json);
                     if (savedPresets == null) savedPresets = new PresetList();
+
+                    // Remove duplicates left over from the pre-dedup bug
+                    var seen = new HashSet<string>();
+                    var deduped = new List<PresetData>();
+                    foreach (var p in savedPresets.presets)
+                    {
+                        string key = $"{p.itemID}|{p.itemType}|{p.colorHex}";
+                        if (seen.Add(key)) deduped.Add(p);
+                    }
+                    if (deduped.Count != savedPresets.presets.Count)
+                    {
+                        MelonLogger.Msg($"[SaveItems] Removed {savedPresets.presets.Count - deduped.Count} duplicate preset(s).");
+                        savedPresets.presets = deduped;
+                        SavePresets();
+                    }
+
+                    MelonLogger.Msg($"[SaveItems] Loaded {savedPresets.presets.Count} preset(s).");
                 }
                 catch (Exception e) { MelonLogger.Error("Load failed: " + e.Message); }
             }
