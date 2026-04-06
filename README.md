@@ -24,11 +24,12 @@ A mod for the game Data Center that allows players to save custom colours for it
    - Close the game once you reach the main menu.
 
 3. **Install the Mod:**
-   - Download the `SaveItems.dll`.
-   - Place `SaveItems.dll` into the `Mods` folder in your game directory.
+   - Download the `CustomItemSaver.zip`.
+   - Extach the zip file
+   - Place `CustomItemSaver.dll` into the `Mods` folder in your game directory.
 
 4. **Verify Installation:**
-   - Launch the game. The MelonLoader console should show `Saved Items Mod` has loaded successfully.
+   - Launch the game. The MelonLoader console should show `Custom Item Saver Mod` has loaded successfully.
 ---
 
 ## 🎮 How to Use
