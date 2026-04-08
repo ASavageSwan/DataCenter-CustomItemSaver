@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using MelonLoader;
 
-[assembly: MelonInfo(typeof(SaveItems.CustomItemsSaver), "Custom Item Saver Mod", "1.0.0", "ASavageSwan")]
+[assembly: MelonInfo(typeof(SaveItems.CustomItemsSaver), "Custom Item Saver Mod", "1.0.1", "ASavageSwan")]
 [assembly: MelonGame("Waseku", "Data Center")]
 
 namespace SaveItems
