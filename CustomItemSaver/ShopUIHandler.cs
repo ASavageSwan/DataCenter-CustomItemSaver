@@ -18,7 +18,7 @@ namespace SaveItems
         public static void Postfix_GetItemCount(ref int __result, AssetManagement __instance)
         {
             if (IsShop(__instance))
-                __result += CustomItemsSaver.savedPresets.presets.Count;
+                __result += CustomItemsSaver.SavedPresets.presets.Count;
         }
 
         // 2. Inject our data into the recycled cards
@@ -28,16 +28,16 @@ namespace SaveItems
         {
             if (!IsShop(__instance)) return true;
 
-            int originalCount = __instance.GetItemCount() - CustomItemsSaver.savedPresets.presets.Count;
+            int originalCount = __instance.GetItemCount() - CustomItemsSaver.SavedPresets.presets.Count;
 
             GameObject card = cell.Cast<Component>().gameObject;
 
             if (index >= originalCount)
             {
                 int presetIndex = index - originalCount;
-                if (presetIndex < CustomItemsSaver.savedPresets.presets.Count)
+                if (presetIndex < CustomItemsSaver.SavedPresets.presets.Count)
                 {
-                    var preset = CustomItemsSaver.savedPresets.presets[presetIndex];
+                    var preset = CustomItemsSaver.SavedPresets.presets[presetIndex];
                     ApplyPresetVisuals(card, preset);
                     return false; // Stop original game logic
                 }

@@ -25,14 +25,14 @@ namespace SaveItems
                 };
 
                 // Don't save if an identical preset already exists
-                bool isDuplicate = CustomItemsSaver.savedPresets.presets.Exists(p =>
+                bool isDuplicate = CustomItemsSaver.SavedPresets.presets.Exists(p =>
                     p.itemID == newPreset.itemID &&
                     p.itemType == newPreset.itemType &&
                     p.colorHex == newPreset.colorHex);
 
                 if (!isDuplicate)
                 {
-                    CustomItemsSaver.savedPresets.presets.Add(newPreset);
+                    CustomItemsSaver.SavedPresets.presets.Add(newPreset);
                     CustomItemsSaver.SavePresets();
                     MelonLogger.Msg($"[SaveItems] Saved new preset: '{newPreset.displayName}' color={newPreset.colorHex}");
                 }

@@ -88,7 +88,7 @@ namespace SaveItems
 
         public static void InjectPresetCards(ComputerShop shop)
         {
-            if (CustomItemsSaver.savedPresets.presets.Count == 0) return;
+            if (CustomItemsSaver.SavedPresets.presets.Count == 0) return;
 
             GameObject parent = shop.shopItemParent;
             if (parent == null)
@@ -124,7 +124,7 @@ namespace SaveItems
             GameObject templateGO = shopItemsArray[0].gameObject;
 
             var allSOs = Resources.FindObjectsOfTypeAll<ShopItemSO>();
-            var presets = CustomItemsSaver.savedPresets.presets;
+            var presets = CustomItemsSaver.SavedPresets.presets;
 
             for (int i = 0; i < presets.Count; i++)
             {
@@ -150,7 +150,7 @@ namespace SaveItems
                 Sprite icon = null;
                 foreach (var so in allSOs)
                 {
-                    if (so != null && so.itemID == preset.itemID && (int)so.itemType == preset.itemType)
+                    if (so != null && so.itemID == preset.itemID && (int)so.itemType == preset.itemType && so.isCustomColor)
                     {
                         icon = so.sprite;
                         break;
@@ -290,7 +290,8 @@ namespace SaveItems
             {
                 if (si?.shopItemSO != null &&
                     si.shopItemSO.itemID == itemID &&
-                    (int)si.shopItemSO.itemType == itemType)
+                    (int)si.shopItemSO.itemType == itemType &&
+                    si.shopItemSO.isCustomColor) // Only match the custom-coloured base item
                     return si;
             }
             return null;
