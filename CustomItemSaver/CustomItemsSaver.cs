@@ -1,15 +1,15 @@
 ﻿using System.Text.Json;
 using MelonLoader;
 
-[assembly: MelonInfo(typeof(SaveItems.CustomItemsSaver), "Custom Item Saver Mod", "1.0.1", "ASavageSwan")]
+[assembly: MelonInfo(typeof(SaveItems.CustomItemsSaver), "Custom Item Saver Mod", "1.0.2", "ASavageSwan")]
 [assembly: MelonGame("Waseku", "Data Center")]
 
 namespace SaveItems
 {
     public class CustomItemsSaver : MelonMod
     {
-        public static PresetList savedPresets = new PresetList();
-        public static string saveFilePath = "UserData/CustomItemPresets.json";
+        public static PresetList SavedPresets = new PresetList();
+        private static readonly string SaveFilePath = "UserData/CustomItemPresets.json";
 
         public override void OnInitializeMelon()
         {
@@ -18,30 +18,30 @@ namespace SaveItems
 
         private static void LoadPresets()
         {
-            if (File.Exists(saveFilePath))
+            if (File.Exists(SaveFilePath))
             {
                 try
                 {
-                    string json = File.ReadAllText(saveFilePath);
-                    savedPresets = JsonSerializer.Deserialize<PresetList>(json);
-                    if (savedPresets == null) savedPresets = new PresetList();
+                    string json = File.ReadAllText(SaveFilePath);
+                    SavedPresets = JsonSerializer.Deserialize<PresetList>(json);
+                    if (SavedPresets == null) SavedPresets = new PresetList();
 
                     // Remove duplicates left over from the pre-dedup bug
                     var seen = new HashSet<string>();
                     var deduped = new List<PresetData>();
-                    foreach (var p in savedPresets.presets)
+                    foreach (var p in SavedPresets.presets)
                     {
                         string key = $"{p.itemID}|{p.itemType}|{p.colorHex}";
                         if (seen.Add(key)) deduped.Add(p);
                     }
-                    if (deduped.Count != savedPresets.presets.Count)
+                    if (deduped.Count != SavedPresets.presets.Count)
                     {
-                        MelonLogger.Msg($"[SaveItems] Removed {savedPresets.presets.Count - deduped.Count} duplicate preset(s).");
-                        savedPresets.presets = deduped;
+                        MelonLogger.Msg($"[SaveItems] Removed {SavedPresets.presets.Count - deduped.Count} duplicate preset(s).");
+                        SavedPresets.presets = deduped;
                         SavePresets();
                     }
 
-                    MelonLogger.Msg($"[SaveItems] Loaded {savedPresets.presets.Count} preset(s).");
+                    MelonLogger.Msg($"[SaveItems] Loaded {SavedPresets.presets.Count} preset(s).");
                 }
                 catch (Exception e) { MelonLogger.Error("Load failed: " + e.Message); }
             }
@@ -52,8 +52,8 @@ namespace SaveItems
             try
             {
                 var options = new JsonSerializerOptions { WriteIndented = true };
-                string json = JsonSerializer.Serialize(savedPresets, options);
-                File.WriteAllText(saveFilePath, json);
+                var json = JsonSerializer.Serialize(SavedPresets, options);
+                File.WriteAllText(SaveFilePath, json);
             }
             catch (Exception e) { MelonLogger.Error("Save failed: " + e.Message); }
         }
